@@ -1,0 +1,50 @@
+{
+  // Go настройки
+  "go.useLanguageServer": true,
+  "go.languageServerExperimentalFeatures": {
+    "diagnostics": true,
+    "documentLink": true
+  },
+  // Автоформатирование при сохранении
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.organizeImports": "explicit",
+    "source.fixAll": "explicit"
+  },
+  // Go форматирование
+  "[go]": {
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "golang.go",
+    "editor.codeActionsOnSave": {
+      "source.organizeImports": "explicit"
+    }
+  },
+  // Настройки gopls
+  "gopls": {
+    "formatting.gofumpt": true,
+    "staticcheck": true,
+    "usePlaceholders": true,
+    "completeUnimported": true,
+    "deepCompletion": true,
+    "matcher": "fuzzy",
+    "analyses": {
+      "unusedparams": true,
+      "shadow": true,
+      "nilness": true,
+      "unusedwrite": true,
+      "useany": true
+    }
+  },
+  // Дополнительные настройки
+  "go.toolsManagement.autoUpdate": true,
+  "go.installDependenciesWhenBuilding": true,
+  "go.testFlags": [
+    "-v"
+  ],
+  "go.lintTool": "golangci-lint",
+  "go.lintOnSave": "package",
+  // Переменные окружения для терминала
+  "terminal.integrated.env.windows": {
+    "CONFIG_PATH": "./config/local.yaml"
+  }
+}

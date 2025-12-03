@@ -1,0 +1,14 @@
+.git
+.gitignore
+.vscode
+.cursor
+*.md
+*.db
+*.log
+storage/
+.env
+.github
+*.test
+coverage.out
+.golangci.yml
+
