@@ -11,9 +11,13 @@
    - Пример: `192.168.1.100` или `example.com`
 
 2. **SSH_PRIVATE_KEY** - Приватный SSH ключ для подключения к серверу
-   - Сгенерируйте ключ: `ssh-keygen -t ed25519 -C "github-actions"`
-   - Скопируйте содержимое приватного ключа (обычно `~/.ssh/id_ed25519`)
-   - Добавьте публичный ключ на сервер: `ssh-copy-id root@SERVER_HOST`
+   - Сгенерируйте ключ: `ssh-keygen -t ed25519 -C "github-actions"` (или `ssh-keygen -t rsa -b 4096`)
+   - **ВАЖНО:** Скопируйте ВСЁ содержимое приватного ключа, включая:
+     - Начало: `-----BEGIN OPENSSH PRIVATE KEY-----` или `-----BEGIN RSA PRIVATE KEY-----`
+     - Все строки ключа
+     - Конец: `-----END OPENSSH PRIVATE KEY-----` или `-----END RSA PRIVATE KEY-----`
+   - Вставьте ключ в secret БЕЗ изменений, сохраняя все переносы строк
+   - Добавьте публичный ключ на сервер: `ssh-copy-id -p PORT root@SERVER_HOST` (или вручную: `cat ~/.ssh/id_ed25519.pub | ssh root@SERVER_HOST "cat >> ~/.ssh/authorized_keys"`)
 
 3. **HTTP_SERVER_USER** - Имя пользователя для Basic Auth
    - Пример: `admin`
@@ -44,13 +48,13 @@
    - Добавьте публичный ключ в `~/.ssh/authorized_keys`
    - Убедитесь, что SSH сервис запущен
 
-4. Откройте порт 8080 в firewall (если используется):
+4. Откройте порт 8082 в firewall (если используется):
    ```bash
    # Для ufw
-   ufw allow 8080/tcp
+   ufw allow 8082/tcp
    
    # Для firewalld
-   firewall-cmd --permanent --add-port=8080/tcp
+   firewall-cmd --permanent --add-port=8082/tcp
    firewall-cmd --reload
    ```
 
@@ -71,6 +75,6 @@ docker ps | grep url-shortener
 docker logs url-shortener
 
 # Проверка доступности
-curl http://SERVER_HOST:8080
+curl http://SERVER_HOST:8082
 ```
 
