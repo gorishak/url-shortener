@@ -26,38 +26,45 @@ jobs:
         run: |
           docker save url-shortener:latest | gzip > url-shortener.tar.gz
 
-      - name: Setup SSH key
-        run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
-          chmod 600 ~/.ssh/deploy_key
-          ssh-keyscan -H -p ${{ secrets.SSH_PORT || 22 }} ${{ secrets.SERVER_HOST }} >> ~/.ssh/known_hosts || true
-
       - name: Copy image to server
-        run: |
-          scp -i ~/.ssh/deploy_key \
-            -P ${{ secrets.SSH_PORT || 22 }} \
-            -o StrictHostKeyChecking=no \
-            url-shortener.tar.gz root@${{ secrets.SERVER_HOST }}:/tmp/
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: root
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SSH_PORT || 22 }}
+          source: "url-shortener.tar.gz"
+          target: "/tmp/"
 
       - name: Deploy to server
-        run: |
-          ssh -i ~/.ssh/deploy_key \
-            -p ${{ secrets.SSH_PORT || 22 }} \
-            -o StrictHostKeyChecking=no \
-            root@${{ secrets.SERVER_HOST }} \
-            "docker load < /tmp/url-shortener.tar.gz && \
-             docker stop url-shortener || true && \
-             docker rm url-shortener || true && \
-             mkdir -p /opt/url-shortener/storage && \
-             docker run -d \
-               --name url-shortener \
-               --restart unless-stopped \
-               -p 8082:8082 \
-               -v /opt/url-shortener/storage:/app/storage \
-               -e HTTP_SERVER_USER='${{ secrets.HTTP_SERVER_USER }}' \
-               -e HTTP_SERVER_PASSWORD='${{ secrets.HTTP_SERVER_PASSWORD }}' \
-               url-shortener:latest && \
-             rm -f /tmp/url-shortener.tar.gz && \
-             docker image prune -f"
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: root
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SSH_PORT || 22 }}
+          script: |
+            # Load Docker image
+            docker load < /tmp/url-shortener.tar.gz
+            
+            # Stop and remove old container if exists
+            docker stop url-shortener || true
+            docker rm url-shortener || true
+            
+            # Create storage directory if not exists
+            mkdir -p /opt/url-shortener/storage
+            
+            # Run new container
+            docker run -d \
+              --name url-shortener \
+              --restart unless-stopped \
+              -p 8082:8082 \
+              -v /opt/url-shortener/storage:/app/storage \
+              -e HTTP_SERVER_USER=${{ secrets.HTTP_SERVER_USER }} \
+              -e HTTP_SERVER_PASSWORD=${{ secrets.HTTP_SERVER_PASSWORD }} \
+              url-shortener:latest
+            
+            # Cleanup
+            rm -f /tmp/url-shortener.tar.gz
+            docker image prune -f
 

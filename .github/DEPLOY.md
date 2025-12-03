@@ -11,12 +11,15 @@
    - Пример: `192.168.1.100` или `example.com`
 
 2. **SSH_PRIVATE_KEY** - Приватный SSH ключ для подключения к серверу
-   - Сгенерируйте ключ: `ssh-keygen -t ed25519 -C "github-actions"` (или `ssh-keygen -t rsa -b 4096`)
+   - **КРИТИЧЕСКИ ВАЖНО:** Ключ должен быть БЕЗ пароля (passphrase)!
+     - При генерации нажмите Enter при запросе passphrase (оставьте пустым)
+     - Команда: `ssh-keygen -t ed25519 -C "github-actions" -N ""` (или `ssh-keygen -t rsa -b 4096 -N ""`)
    - **ВАЖНО:** Скопируйте ВСЁ содержимое приватного ключа, включая:
      - Начало: `-----BEGIN OPENSSH PRIVATE KEY-----` или `-----BEGIN RSA PRIVATE KEY-----`
-     - Все строки ключа
+     - Все строки ключа (обычно 50-70 строк)
      - Конец: `-----END OPENSSH PRIVATE KEY-----` или `-----END RSA PRIVATE KEY-----`
    - Вставьте ключ в secret БЕЗ изменений, сохраняя все переносы строк
+   - **Проверка формата:** Убедитесь, что ключ начинается с `-----BEGIN` и заканчивается `-----END`
    - Добавьте публичный ключ на сервер: `ssh-copy-id -p PORT root@SERVER_HOST` (или вручную: `cat ~/.ssh/id_ed25519.pub | ssh root@SERVER_HOST "cat >> ~/.ssh/authorized_keys"`)
 
 3. **HTTP_SERVER_USER** - Имя пользователя для Basic Auth
