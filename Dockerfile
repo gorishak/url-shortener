@@ -11,7 +11,7 @@ RUN go mod download
 COPY . .
 
 # Build the application
-RUN CGO_ENABLED=1 GOOS=linux go build -o url-shortener ./cmd/url-shortener
+RUN go build -o url-shortener ./cmd/url-shortener
 
 # Runtime stage
 FROM alpine:latest
@@ -31,7 +31,7 @@ COPY config/prod.yaml /app/config/prod.yaml
 RUN mkdir -p /app/storage
 
 # Expose port
-EXPOSE 8080
+EXPOSE 8082
 
 # Set environment variable
 ENV CONFIG_PATH=/app/config/prod.yaml
