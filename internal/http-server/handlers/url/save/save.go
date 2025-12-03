@@ -1,7 +1,9 @@
 package save
 
 import (
+	"encoding/json"
 	"errors"
+	"io"
 	"log/slog"
 	"net/http"
 
@@ -44,14 +46,22 @@ func New(log *slog.Logger, urlSaver URLSaver) http.HandlerFunc {
 		)
 
 		var req Request
-		// an := make(map[string]interface{})
-		// read, _ := io.ReadAll(r.Body)
-		// _ = json.Unmarshal(read, &an)
-		// fmt.Println(an)
-		err := render.DecodeJSON(r.Body, &req)
+
+		// Read body for logging and parsing
+		body, err := io.ReadAll(r.Body)
 		if err != nil {
-			log.Error("failed to decode request", sl.Err(err))
-			render.JSON(w, r, resp.Error("failed to decode request"))
+			log.Error("failed to read request body", sl.Err(err))
+			render.JSON(w, r, resp.Error("failed to read request body"))
+			return
+		}
+
+		// Log raw body for debugging
+		log.Debug("raw request body", slog.String("body", string(body)))
+
+		// Parse JSON
+		if err = json.Unmarshal(body, &req); err != nil {
+			log.Error("failed to decode JSON", sl.Err(err), slog.String("body", string(body)))
+			render.JSON(w, r, resp.Error("invalid JSON format"))
 			return
 		}
 
